@@ -1,9 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Image;
 import java.util.Hashtable;
-
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -18,7 +15,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
 public class main {
-    static JFrame frame = new JFrame("Food-Waste-Tracker");
+    static JFrame frame = new JFrame("Food Waste Tracker");
     static JLabel pic = new JLabel(new ImageIcon("image/zero.jpg"));
     static JLabel feedback = new JLabel("", SwingConstants.CENTER);
     static boolean showstats = false;
@@ -36,6 +33,7 @@ public class main {
         frame.add(imgPanel, BorderLayout.CENTER);
 
         Components components = new Components();
+        components.askUser(frame);
         JSlider leftoverSlider = new JSlider(JSlider.HORIZONTAL, 0, 5, 0);
         addSliderLabels(leftoverSlider, "0", "5");
         JPanel sliderPanel = new JPanel(new BorderLayout());
@@ -47,7 +45,8 @@ public class main {
         });
 
         JButton statButton = new JButton("Show Stats");
-        JLabel label = new JLabel("No Statistics Available");
+        JLabel label = new JLabel("");
+        label.setText(components.returnInfo());
         label.setBorder(new EmptyBorder(20, 20, 20, 20));
         statButton.addActionListener(e -> {
             showstats = (!showstats);
@@ -105,12 +104,6 @@ public class main {
     }
 
     public static void main(String[] args) {
-
         SwingUtilities.invokeLater(() -> createAndShowGUI());
-
-        Components c = new Components();
-        for (int i = 0; i < 10; i++) {
-            c.askUser(frame);
-        }
     }
 }

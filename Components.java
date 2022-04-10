@@ -6,30 +6,27 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
 
 public class Components extends JPanel implements MouseListener {
-    public final static int[] DAYINMONTH = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-    private int daysUsed = 0;
-    private int totalScore = 0;
-    private int currDayWeek;
-    private int currMon;
-    private int currDayNum;
-    private ArrayList<Day> scores = new ArrayList<Day>();
     Scanner in = new Scanner(System.in);
 
     public Components() {
         int[] tmp = getDate();
-        currDayWeek = tmp[0];
-        currMon = tmp[1];
-        currDayNum = tmp[2];
+        data.currDayWeek = tmp[0];
+        data.currMon = tmp[1];
+        data.currDayNum = tmp[2];
+        data.readData();
     }
 
     public static int[] getDate() {
@@ -39,20 +36,7 @@ public class Components extends JPanel implements MouseListener {
 
     public void askUser(JFrame frame) {
         JLabel question = new JLabel("How much leftovers did you have on a scale of 0 to 5? ", SwingConstants.CENTER);
-        question.setFont(new Font("Serif", Font.BOLD, 24));
-        question.setBorder(new EmptyBorder(10, 20, 10, 20));
         frame.add(question, BorderLayout.NORTH);
-        String tempuserin = in.next();
-        int userin;
-        while (!(Double.parseDouble(tempuserin) <= 5.0 && Double.parseDouble(tempuserin) >= 0.0)
-                || Double.parseDouble(tempuserin) % 1.0 != 0.0) {
-            System.out.print(
-                    "How much leftovers did you have on a scale of 0 to 5 (please enter a valid whole number between 0 and 5)? ");
-            tempuserin = in.next();
-        }
-        userin = (int) Double.parseDouble(tempuserin);
-        addDataPoint(userin);
-        printInfo();
         frame.pack();
     }
 
@@ -76,7 +60,7 @@ public class Components extends JPanel implements MouseListener {
             feedback.setText(":'''''(");
             pic.setIcon(resize("images/five.jpg"));
         }
-        repaint();
+        frame.repaint();
     }
 
     // resize images to appropiate size
@@ -91,32 +75,35 @@ public class Components extends JPanel implements MouseListener {
     }
 
     public ArrayList<Day> getScores() {
-        return scores;
+        return data.scores;
     }
 
     public void addDataPoint(int in) {
-        daysUsed++;
-        totalScore += in;
-        Day d = new Day(currDayWeek, currDayNum, currMon, in);
-        scores.add(d);
+        data.daysUsed++;
+        data.totalScore += in;
+        Day d = new Day(data.currDayWeek, data.currDayNum, data.currMon, in);
+        data.scores.add(d);
+        data.updateData();
     }
 
     public void printInfo() {
-        Day in = scores.get(scores.size() - 1);
-        System.out.println("Day " + daysUsed);
-        System.out.println("Your waste scale for today is: " + in.score);
+        Day in = data.scores.get(data.scores.size() - 1);
+        System.out.println("Day " + data.daysUsed);
+        System.out.println("Your waste scale for today is: " + in.getScore());
+        // System.out.println(FEEDBACKS[in.score]);
+
         System.out.println("Weekly Average Score: " + String.format("%.2f", getSubAverage('w')));
         System.out.println("Monthly Average Score: " + String.format("%.2f", getSubAverage('m')));
         System.out.println("Overall Average Score: " + String.format("%.2f", totalAverage()));
     }
 
     public String returnInfo() {
-        Day in = scores.get(scores.size() - 1);
+        Day in = data.scores.get(data.scores.size() - 1);
         StringBuilder changingstr = new StringBuilder();
         changingstr.append("<html>");
-        changingstr.append("Day " + daysUsed);
+        changingstr.append("Day " + data.daysUsed);
         changingstr.append("<br />");
-        changingstr.append("Your waste scale for today is: " + in.score);
+        changingstr.append("Your waste scale for today is: " + in.getScore());
         changingstr.append("<br />");
         changingstr.append("Weekly Average Score: " + String.format("%.2f", getSubAverage('w')));
         changingstr.append("<br />");
@@ -124,56 +111,59 @@ public class Components extends JPanel implements MouseListener {
         changingstr.append("<br />");
         changingstr.append("Overall Average Score: " + String.format("%.2f", totalAverage()));
         changingstr.append("</html>");
-
         return changingstr.toString();
     }
 
     public double totalAverage() {
-        // int sum = 0;
-        // if (scores != null) {
-        //     for (Day s : scores) {
-        //         if (s != null) {
-        //             sum += s.score;
-        //         }
-        //     }
-        // }
-        return (double) totalScore / scores.size();
+        int sum = 0;
+        if (data.scores != null) {
+            for (Day s : data.scores) {
+                if (s != null) {
+                    sum += s.getScore();
+                }
+            }
+        }
+        return (double) sum / data.scores.size();
     }
 
     public double getSubAverage(char type) {
         int iteration = 7;
         if (type == 'm')
-            iteration = DAYINMONTH[currMon];
-        int size = scores.size();
+            iteration = data.DAYINMONTH[data.currMon];
+        int size = data.scores.size();
         if (size < iteration)
             iteration = size;
-        return getScoreSum(scores, iteration) / (double) iteration;
+        return getScoreSum(data.scores, iteration) / (double) iteration;
     }
 
     // get the sum of the ArrayList for iterations from the last element for the
     // iteration specified
-    public static int getScoreSum(ArrayList<Day> arr, int iteration) {
+    public static int getScoreSum(ArrayList<Day> scores, int iteration) {
         int sum = 0;
-        int size = arr.size();
+        int size = data.scores.size();
         for (int i = 1; i <= iteration; i++) {
-            sum += arr.get(size - i).score;
+            sum += data.scores.get(size - i).getScore();
         }
         return sum;
     }
 
-    private class Day {
-        private int month;
-        private int dayNum;
-        private int dayWeek;
-        private int score;
+    // public class Day {
+    //     private int month;
+    //     private int dayNum;
+    //     private int dayWeek;
+    //     private int score;
 
-        private Day(int dw, int dn, int m, int s) {
-            month = m;
-            dayNum = dn;
-            dayWeek = dw;
-            score = s;
-        }
-    }
+    //     public Day(int dw, int dn, int m, int s) {
+    //         month = m;
+    //         dayNum = dn;
+    //         dayWeek = dw;
+    //         score = s;
+    //     }
+
+    //     public int getScore() {
+    //         return score;
+    //     }
+    // }
 
     @Override
     public void mouseClicked(MouseEvent arg0) {
