@@ -1,4 +1,5 @@
 Submission for YHack Spring 2022
+Project submission for YHACK Spring 2022. Collaborated with Chenling Huang and Harim Hahn.
 
 ## Inspiration
 As college students who regular consume our meals in dining halls, we notice how much food waste is generated every day, both in during the preparation and consumption phases. With the university's emphasis on sustainability and environmental protection, we feel impelled to decrease the food waste level, as we know how precious food is and the fact that there are many people around the world who don't have enough access to food and struggling in such circumstances. This program serves as our attempt to address this issue and increase awareness about it so that more people can learn about it, become more conscious of whether they are wasting food on a daily basis and make improvements from there.
